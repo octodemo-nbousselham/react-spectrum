@@ -10,6 +10,7 @@
  * governing permissions and limitations under the License.
  */
 
+import {Text as AriaText, TextContext as AriaTextContext} from 'react-aria-components/Text';
 import {
   TextArea as AriaTextArea,
   TextAreaContext as AriaTextAreaContext
@@ -22,6 +23,7 @@ import {centerPadding, style} from '../style' with {type: 'macro'};
 import {composeRenderProps} from 'react-aria-components/composeRenderProps';
 import {ContextValue, Provider, useSlottedContext} from 'react-aria-components/slots';
 import {
+  controlFont,
   controlSize,
   field,
   getAllowedOverrides,
@@ -220,18 +222,87 @@ export const TextFieldBase = forwardRef(function TextFieldBase(
               {isInvalid && <FieldErrorIcon isDisabled={isDisabled} />}
             </Provider>
           </FieldGroup>
-          <HelpText
+          <FieldHelpRow
             size={props.size}
             isDisabled={isDisabled}
             isInvalid={isInvalid}
-            description={description}>
-            {errorMessage}
-          </HelpText>
+            description={description}
+            errorMessage={errorMessage}
+          />
         </>
       ))}
     </AriaTextField>
   );
 });
+
+const characterCountStyles = style({
+  marginStart: 'auto',
+  flexShrink: 0,
+  font: controlFont(),
+  color: {
+    default: 'neutral-subdued',
+    isDisabled: {
+      default: 'disabled',
+      forcedColors: 'GrayText'
+    }
+  },
+  whiteSpace: 'nowrap'
+});
+
+const helpTextRowStyles = style({
+  gridArea: 'helptext',
+  display: 'flex',
+  alignItems: 'baseline',
+  columnGap: 'text-to-visual',
+  paddingTop: '--field-gap',
+  minWidth: 0
+});
+
+const helpTextBesideCountStyles = style({
+  paddingTop: 0,
+  flexGrow: 1,
+  minWidth: 0
+});
+
+function FieldHelpRow(props: {
+  size?: 'S' | 'M' | 'L' | 'XL';
+  isDisabled?: boolean;
+  isInvalid?: boolean;
+  description?: ReactNode;
+  errorMessage?: TextFieldProps['errorMessage'];
+}) {
+  let textSlots = useContext(AriaTextContext);
+  let hasCharacterCount = !!(
+    textSlots &&
+    typeof textSlots === 'object' &&
+    'slots' in textSlots &&
+    textSlots.slots?.characterCount
+  );
+  let helpText = (
+    <HelpText
+      size={props.size}
+      isDisabled={props.isDisabled}
+      isInvalid={props.isInvalid}
+      description={props.description}
+      styles={hasCharacterCount ? helpTextBesideCountStyles : undefined}>
+      {props.errorMessage}
+    </HelpText>
+  );
+
+  if (!hasCharacterCount) {
+    return helpText;
+  }
+
+  return (
+    <div className={helpTextRowStyles}>
+      {helpText}
+      <AriaText
+        slot="characterCount"
+        className={characterCountStyles({size: props.size, isDisabled: props.isDisabled})}
+      />
+    </div>
+  );
+}
 
 function TextAreaInput() {
   // Force re-render when value changes so we update the height.

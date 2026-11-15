@@ -39,6 +39,21 @@ describe('TextField', () => {
     {name: 'Input', component: Input},
     {name: 'TextArea', component: TextArea}
   ])('$name', ({name, component}) => {
+    it('shows a character count when showCharacterCount and maxLength are set', () => {
+      let InputComponent = component;
+      let {getByRole} = render(
+        <TextField showCharacterCount maxLength={20} aria-label="Name">
+          <InputComponent />
+        </TextField>
+      );
+
+      let input = getByRole('textbox');
+      let count = document.querySelector('.react-aria-TextField-characterCount');
+      expect(count).toHaveTextContent('0/20');
+      expect(count).not.toHaveAttribute('aria-live');
+      expect(input.getAttribute('aria-describedby')).toBe(count.id);
+    });
+
     it('provides slots', () => {
       let {getByRole} = render(<TestTextField input={component} />);
 

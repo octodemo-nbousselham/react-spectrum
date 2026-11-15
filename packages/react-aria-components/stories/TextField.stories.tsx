@@ -41,6 +41,15 @@ export const TextfieldExample: TextFieldStory = {
   }
 };
 
+export const CharacterCount: TextFieldStory = {
+  render: () => (
+    <TextField showCharacterCount maxLength={20} defaultValue="Hello">
+      <Label>Name</Label>
+      <Input />
+    </TextField>
+  )
+};
+
 export const TextFieldSubmitExample: TextFieldStory = {
   render: args => {
     return (

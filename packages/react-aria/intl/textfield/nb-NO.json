@@ -1,0 +1,4 @@
+{
+  "characterCount": "{current, number}/{max, number}",
+  "charactersRemaining": "{count, plural, one {# character remaining} other {# characters remaining}}"
+}

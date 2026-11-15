@@ -194,6 +194,14 @@ Both a description and an error message can be supplied to a TextArea. The descr
 </Flex>
 ```
 
+### Character count
+
+Set `showCharacterCount` together with `maxLength` to show how many characters have been entered, as `current/max`, below the field. The count stays visible when the field is invalid. As the limit approaches, the remaining characters are announced politely to screen readers.
+
+```tsx example
+<TextArea label="Comment" showCharacterCount maxLength={140} />
+```
+
 ### Contextual help
 
 A [ContextualHelp](ContextualHelp.html) element may be placed next to the label to provide additional information or help about a TextArea.

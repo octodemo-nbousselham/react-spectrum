@@ -44,6 +44,10 @@ export interface SpectrumFieldProps
   labelProps?: LabelHTMLAttributes<HTMLLabelElement>;
   descriptionProps?: HTMLAttributes<HTMLElement>;
   errorMessageProps?: HTMLAttributes<HTMLElement>;
+  /** Character count rendered at the end of the help text row. */
+  characterCount?: ReactNode;
+  /** Props for the character count element, including its id. */
+  characterCountProps?: HTMLAttributes<HTMLElement>;
   wrapperClassName?: string;
   wrapperProps?: HTMLAttributes<HTMLElement>;
 }
@@ -76,6 +80,8 @@ export const Field = React.forwardRef(function Field(
     // Not every component that uses <Field> supports help text.
     descriptionProps = {},
     errorMessageProps = {},
+    characterCount,
+    characterCountProps,
     elementType,
     wrapperClassName,
     wrapperProps = {},
@@ -96,7 +102,9 @@ export const Field = React.forwardRef(function Field(
     errorMessageString = errorMessage;
   }
   let hasHelpText =
-    !!description || (errorMessageString && (isInvalid || validationState === 'invalid'));
+    !!description ||
+    !!characterCount ||
+    (errorMessageString && (isInvalid || validationState === 'invalid'));
   let contextualHelpId = useId();
 
   let fallbackLabelPropsId = useId();
@@ -131,6 +139,8 @@ export const Field = React.forwardRef(function Field(
       errorMessageProps={errorMessageProps}
       description={description}
       errorMessage={errorMessageString}
+      characterCount={characterCount}
+      characterCountProps={characterCountProps}
       validationState={validationState}
       isInvalid={isInvalid}
       isDisabled={isDisabled}
