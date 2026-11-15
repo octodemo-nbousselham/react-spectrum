@@ -90,6 +90,20 @@ function Example(props) {
 }
 ```
 
+## Character count
+
+Set `showCharacterCount` together with `maxLength` to show `current/max` below the field. The count stays visible when the field is invalid. As the limit approaches, the remaining characters are announced politely to screen readers.
+
+```tsx render
+"use client";
+import {TextField, Label, Input} from 'react-aria-components/TextField';
+
+<TextField showCharacterCount maxLength={20}>
+  <Label>Bio</Label>
+  <Input />
+</TextField>
+```
+
 ## TextArea
 
 Use `<TextArea>` instead of `<Input>` to enable multi-line input.

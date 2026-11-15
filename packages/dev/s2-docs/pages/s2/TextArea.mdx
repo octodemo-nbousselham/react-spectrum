@@ -99,6 +99,17 @@ function Example(props) {
 }
 ```
 
+## Character count
+
+Set `showCharacterCount` together with `maxLength` to show `current/max` below the field. The count stays visible when the field is invalid. As the limit approaches, the remaining characters are announced politely to screen readers.
+
+```tsx render
+"use client";
+import {TextArea} from '@react-spectrum/s2/TextArea';
+
+<TextArea label="Comment" showCharacterCount maxLength={140} />
+```
+
 ## API
 
 <PropTable component={docs.exports.TextArea} links={docs.links} />

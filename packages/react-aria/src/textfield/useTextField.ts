@@ -10,6 +10,7 @@
  * governing permissions and limitations under the License.
  */
 
+import {announce} from '../live-announcer/LiveAnnouncer';
 import {
   AriaLabelingProps,
   AriaValidationProps,
@@ -27,6 +28,7 @@ import {
 } from '@react-types/shared';
 import {filterDOMProps} from '../utils/filterDOMProps';
 import {getEventTarget} from '../utils/shadowdom/DOMFunctions';
+import intlMessages from '../../intl/textfield/*.json';
 import {mergeProps} from '../utils/mergeProps';
 import React, {
   ChangeEvent,
@@ -34,6 +36,7 @@ import React, {
   type JSX,
   LabelHTMLAttributes,
   RefObject,
+  useRef,
   useState
 } from 'react';
 import {useControlledState} from 'react-stately/useControlledState';
@@ -42,6 +45,9 @@ import {useFocusable} from '../interactions/useFocusable';
 import {useFormReset} from '../utils/useFormReset';
 import {useFormValidation} from '../form/useFormValidation';
 import {useFormValidationState} from 'react-stately/private/form/useFormValidationState';
+import {useId} from '../utils/useId';
+import {useLocalizedStringFormatter} from '../i18n/useLocalizedStringFormatter';
+import {useUpdateEffect} from '../utils/useUpdateEffect';
 
 /**
  * A map of HTML element names and their interface types.
@@ -131,6 +137,12 @@ export interface AriaTextFieldProps<T = HTMLInputElement>
    * [MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/enterkeyhint).
    */
   enterKeyHint?: 'enter' | 'done' | 'go' | 'next' | 'previous' | 'search' | 'send';
+  /**
+   * Whether to show the current and maximum character count below the field.
+   * Has no effect unless `maxLength` is also set. As the limit approaches, the remaining
+   * characters are announced politely to screen readers.
+   */
+  showCharacterCount?: boolean;
 }
 
 export interface AriaTextFieldOptions<
@@ -177,6 +189,13 @@ export interface TextFieldAria<
   descriptionProps: DOMAttributes;
   /** Props for the text field's error message element, if any. */
   errorMessageProps: DOMAttributes;
+  /**
+   * The formatted character count, such as "3/10", when `showCharacterCount` and `maxLength` are
+   * set.
+   */
+  characterCount?: string;
+  /** Props for the character count element, if any. */
+  characterCountProps?: DOMAttributes;
 }
 
 /**
@@ -224,6 +243,30 @@ export function useTextField<T extends TextFieldIntrinsicElements = DefaultEleme
   useFormReset(ref, props.defaultValue ?? initialValue, setValue);
   useFormValidation(props, validationState, ref);
 
+  let stringFormatter = useLocalizedStringFormatter(intlMessages, '@react-aria/textfield');
+  let characterCountId = useId();
+  let showCharacterCount = !!props.showCharacterCount && props.maxLength != null;
+  let maxLength = props.maxLength ?? 0;
+  let length = value.length;
+  let remaining = showCharacterCount ? maxLength - length : undefined;
+  let characterCount = showCharacterCount
+    ? stringFormatter.format('characterCount', {current: length, max: maxLength})
+    : undefined;
+  let previousRemaining = useRef(remaining);
+  useUpdateEffect(() => {
+    let previous = previousRemaining.current;
+    previousRemaining.current = remaining;
+    if (remaining == null || previous == null || !shouldAnnounceRemaining(previous, remaining)) {
+      return;
+    }
+    announce(stringFormatter.format('charactersRemaining', {count: remaining}), 'polite');
+  }, [remaining]);
+
+  let ariaDescribedBy =
+    [fieldProps['aria-describedby'], showCharacterCount ? characterCountId : undefined]
+      .filter(Boolean)
+      .join(' ') || undefined;
+
   return {
     labelProps,
     inputProps: mergeProps(domProps, inputElementType === 'input' ? inputOnlyProps : undefined, {
@@ -268,12 +311,26 @@ export function useTextField<T extends TextFieldIntrinsicElements = DefaultEleme
       onBeforeInput: props.onBeforeInput,
       onInput: props.onInput,
       ...focusableProps,
-      ...fieldProps
+      ...fieldProps,
+      'aria-describedby': ariaDescribedBy
     }),
     descriptionProps,
     errorMessageProps,
+    characterCount,
+    characterCountProps: showCharacterCount ? {id: characterCountId} : undefined,
     isInvalid,
     validationErrors,
     validationDetails
   };
+}
+
+// Announce at 10, 5, and 0, and once when a paste jumps from above 10 to below 10.
+// Lengthening the value (remaining count going up) stays silent.
+function shouldAnnounceRemaining(previous: number, remaining: number): boolean {
+  if (remaining < 0 || remaining > previous) {
+    return false;
+  }
+  return (
+    remaining === 10 || remaining === 5 || remaining === 0 || (previous > 10 && remaining < 10)
+  );
 }

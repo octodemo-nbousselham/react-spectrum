@@ -36,6 +36,10 @@ interface HelpTextProps
   errorMessageProps?: HTMLAttributes<HTMLElement>;
   /** An error message for the field. */
   errorMessage?: ReactNode;
+  /** Character count rendered at the end of the help text row. */
+  characterCount?: ReactNode;
+  /** Props for the character count element, including its id. */
+  characterCountProps?: HTMLAttributes<HTMLElement>;
 }
 
 /**
@@ -54,7 +58,9 @@ export const HelpText = React.forwardRef(function HelpText(
     isDisabled,
     showErrorIcon,
     descriptionProps,
-    errorMessageProps
+    errorMessageProps,
+    characterCount,
+    characterCountProps
   } = props;
   let domRef = useDOMRef(ref);
   let isErrorMessage = errorMessage && (isInvalid || validationState === 'invalid');
@@ -83,8 +89,18 @@ export const HelpText = React.forwardRef(function HelpText(
           </div>
         </>
       ) : (
-        <div {...descriptionProps} className={classNames(styles, 'spectrum-HelpText-text')}>
-          {description}
+        (!characterCount || description) && (
+          <div {...descriptionProps} className={classNames(styles, 'spectrum-HelpText-text')}>
+            {description}
+          </div>
+        )
+      )}
+      {characterCount != null && (
+        <div
+          {...characterCountProps}
+          className={classNames(styles, 'spectrum-HelpText-text')}
+          style={{marginInlineStart: 'auto', flex: '0 0 auto'}}>
+          {characterCount}
         </div>
       )}
     </div>

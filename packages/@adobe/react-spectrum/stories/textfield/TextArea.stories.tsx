@@ -96,6 +96,12 @@ export const NoVisibleLabel: TextAreaStory = {
   name: 'no visible label'
 };
 
+export const CharacterCount: TextAreaStory = {
+  render: args =>
+    render({...args, showCharacterCount: true, maxLength: 140, defaultValue: 'Hello'}),
+  name: 'character count'
+};
+
 export const WithDescription: TextAreaStory = {
   render: args => render({...args, description: 'Enter product feedback.'}),
   name: 'with description'

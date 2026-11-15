@@ -105,6 +105,16 @@ export const NoVisibleLabel: TextFieldStory = {
   name: 'no visible label'
 };
 
+export const CharacterCount: TextFieldStory = {
+  args: {
+    label: 'Bio',
+    showCharacterCount: true,
+    maxLength: 20,
+    defaultValue: 'Hello'
+  },
+  render: args => <TextField {...args} />
+};
+
 export const WithDescription: TextFieldStory = {
   render: args => render({...args, description: 'Please enter your street address.'}),
   name: 'with description'

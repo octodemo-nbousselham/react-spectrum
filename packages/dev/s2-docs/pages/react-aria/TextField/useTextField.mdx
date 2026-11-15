@@ -29,6 +29,10 @@ import {TextField} from 'hooks-starter/TextField';
 <TextField label="Email" />
 ```
 
+## Character count
+
+Set `showCharacterCount` together with `maxLength`. `useTextField` returns `characterCount` (for example, `"3/10"`) and `characterCountProps` for the element rendered below the field. The input's `aria-describedby` includes that element. As the limit approaches, the remaining characters are announced politely to screen readers.
+
 ## API
 
 <Anatomy />

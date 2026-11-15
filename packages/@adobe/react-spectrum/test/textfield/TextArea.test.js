@@ -96,6 +96,13 @@ describe('TextArea', () => {
     expect(input.style.height).toBe(`${newScrollHeight}px`);
   });
 
+  it('shows a character count below the field', () => {
+    let tree = renderComponent(TextArea, {showCharacterCount: true, maxLength: 140});
+    let input = tree.getByTestId(testId);
+    expect(tree.getByText('0/140')).toBeInTheDocument();
+    expect(input.getAttribute('aria-describedby')).toBe(tree.getByText('0/140').id);
+  });
+
   it('default does not change height when a height prop is set', async () => {
     let tree = renderComponent(TextArea, {height: 'size-2000'});
     let input = tree.getByTestId(testId);

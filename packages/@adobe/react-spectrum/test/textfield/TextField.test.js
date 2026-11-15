@@ -344,6 +344,28 @@ describe('Shared TextField behavior', () => {
   });
 
   it.each`
+    Name              | Component
+    ${'v3 TextField'} | ${TextField}
+    ${'v3 TextArea'}  | ${TextArea}
+  `('$Name shows a character count below the field', ({Component}) => {
+    let tree = renderComponent(Component, {
+      label: 'Bio',
+      showCharacterCount: true,
+      maxLength: 20,
+      defaultValue: 'Hello'
+    });
+    let input = tree.getByRole('textbox');
+    expect(tree.getByText('5/20')).toBeInTheDocument();
+
+    let describedBy = input.getAttribute('aria-describedby').split(' ');
+    let count = describedBy
+      .map(id => document.getElementById(id))
+      .find(el => el?.textContent === '5/20');
+    expect(count).toBeTruthy();
+    expect(count).not.toHaveAttribute('aria-live');
+  });
+
+  it.each`
     Name                | Component
     ${'v3 TextField'}   | ${TextField}
     ${'v3 TextArea'}    | ${TextArea}

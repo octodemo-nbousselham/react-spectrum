@@ -109,16 +109,26 @@ export const TextField = /*#__PURE__*/ createHideableComponent(function TextFiel
   [props, inputRef as unknown] = useContextProps(props, inputRef, FieldInputContext);
   let [labelRef, label] = useSlot(!props['aria-label'] && !props['aria-labelledby']);
   let [inputElementType, setInputElementType] = useState('input');
-  let {labelProps, inputProps, descriptionProps, errorMessageProps, ...validation} =
-    useTextField<any>(
-      {
-        ...removeDataAttributes(props),
-        inputElementType,
-        label,
-        validationBehavior
-      },
-      inputRef
-    );
+  let {
+    labelProps,
+    inputProps,
+    descriptionProps,
+    errorMessageProps,
+    characterCount,
+    characterCountProps,
+    ...validation
+  } = useTextField<any>(
+    {
+      ...removeDataAttributes(props),
+      inputElementType,
+      label,
+      validationBehavior
+    },
+    inputRef
+  );
+  // Styled consumers render the count themselves and attach this ref. When they do, skip the
+  // default element so the count is not shown twice.
+  let [characterCountRef, hasCharacterCount] = useSlot(true);
 
   // Intercept setting the input ref so we can determine what kind of element we have.
   // useTextField uses this to determine what props to include.
@@ -174,7 +184,16 @@ export const TextField = /*#__PURE__*/ createHideableComponent(function TextFiel
             {
               slots: {
                 description: descriptionProps,
-                errorMessage: errorMessageProps
+                errorMessage: errorMessageProps,
+                ...(characterCount != null
+                  ? {
+                      characterCount: {
+                        ...characterCountProps,
+                        ref: characterCountRef,
+                        children: characterCount
+                      }
+                    }
+                  : {})
               }
             }
           ],
@@ -182,6 +201,11 @@ export const TextField = /*#__PURE__*/ createHideableComponent(function TextFiel
         ]}>
         {renderProps.children}
       </Provider>
+      {characterCount != null && !hasCharacterCount && (
+        <div {...characterCountProps} className="react-aria-TextField-characterCount">
+          {characterCount}
+        </div>
+      )}
     </dom.div>
   );
 });

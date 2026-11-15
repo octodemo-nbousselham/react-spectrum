@@ -98,6 +98,15 @@ export const ContextualHelpExample: StoryTextField = {
   }
 };
 
+export const CharacterCount: StoryTextField = {
+  render: () => (
+    <Form>
+      <TextField label="Name" showCharacterCount maxLength={20} defaultValue="Ada" />
+      <TextArea label="Comment" showCharacterCount maxLength={140} />
+    </Form>
+  )
+};
+
 export const TextAreaExample: StoryTextArea = {
   render: args => <TextArea {...args} />,
   args: {

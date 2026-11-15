@@ -28,6 +28,24 @@ describe('TextField', () => {
     expect(document.activeElement).toBe(textarea);
   });
 
+  it('shows a character count below the field', () => {
+    let {getAllByRole, getAllByText} = render(
+      <>
+        <TextField label="Name" showCharacterCount maxLength={20} defaultValue="Ada" />
+        <TextArea label="Comment" showCharacterCount maxLength={140} />
+      </>
+    );
+
+    let counts = getAllByText(/\/(20|140)$/);
+    expect(counts.map(count => count.textContent)).toEqual(['3/20', '0/140']);
+
+    let textboxes = getAllByRole('textbox');
+    textboxes.forEach((textbox, index) => {
+      expect(counts[index]).not.toHaveAttribute('aria-live');
+      expect(textbox.getAttribute('aria-describedby')).toContain(counts[index].id);
+    });
+  });
+
   it('should label the input with the prefix', () => {
     let {getByRole} = render(<TextField label="Description" prefix="Prefix" />);
 
