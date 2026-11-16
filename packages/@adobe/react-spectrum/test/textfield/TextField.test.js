@@ -868,4 +868,37 @@ describe('Shared TextField behavior', () => {
       });
     });
   });
+
+  describe.each`
+    Name           | Component
+    ${'TextField'} | ${TextField}
+    ${'TextArea'}  | ${TextArea}
+  `('$Name character count', ({Component}) => {
+    it('shows a character count when showCharacterCount and maxLength are set', async () => {
+      let {getByRole, getByText} = render(
+        <Provider theme={theme}>
+          <Component label="Name" showCharacterCount maxLength={10} defaultValue="hello" />
+        </Provider>
+      );
+
+      let input = getByRole('textbox');
+      let count = getByText('5/10');
+      expect(input.getAttribute('aria-describedby')).toContain(count.id);
+
+      await user.clear(input);
+      await user.type(input, 'abc');
+      expect(getByText('3/10')).toBeInTheDocument();
+    });
+
+    it('does not show a character count when maxLength is unset', () => {
+      let {getByRole, queryByText} = render(
+        <Provider theme={theme}>
+          <Component label="Name" showCharacterCount defaultValue="hello" />
+        </Provider>
+      );
+
+      expect(getByRole('textbox')).toBeInTheDocument();
+      expect(queryByText(/\d+\/\d+/)).toBeNull();
+    });
+  });
 });

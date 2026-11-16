@@ -50,6 +50,8 @@ interface TextFieldBaseProps
   inputProps: InputHTMLAttributes<HTMLInputElement> | TextareaHTMLAttributes<HTMLTextAreaElement>;
   descriptionProps?: HTMLAttributes<HTMLElement>;
   errorMessageProps?: HTMLAttributes<HTMLElement>;
+  characterCountProps?: HTMLAttributes<HTMLElement>;
+  characterCountText?: string | null;
   inputRef?: RefObject<HTMLInputElement | HTMLTextAreaElement | null>;
   loadingIndicator?: ReactElement;
   isLoading?: boolean;
@@ -73,6 +75,8 @@ export const TextFieldBase = forwardRef(function TextFieldBase(
     inputProps,
     descriptionProps,
     errorMessageProps,
+    characterCountProps,
+    characterCountText,
     inputRef: userInputRef,
     isLoading,
     loadingIndicator,
@@ -183,6 +187,8 @@ export const TextFieldBase = forwardRef(function TextFieldBase(
       labelProps={labelProps}
       descriptionProps={descriptionProps}
       errorMessageProps={errorMessageProps}
+      characterCountProps={characterCountProps}
+      characterCountText={characterCountText}
       wrapperClassName={classNames(styles, 'spectrum-Textfield-wrapper', {
         'spectrum-Textfield-wrapper--quiet': isQuiet
       })}

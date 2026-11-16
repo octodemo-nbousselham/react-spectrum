@@ -72,6 +72,23 @@ function Example() {
 }
 ```
 
+## Character count
+
+Set `showCharacterCount` with `maxLength` to display a localized `current/max` count below the field. Remaining characters are politely announced to screen readers as the limit approaches.
+
+```tsx render
+"use client";
+import {TextField} from '@react-spectrum/s2/TextField';
+
+<TextField
+  label="Name"
+  showCharacterCount
+  maxLength={20}
+  defaultValue="Hello"
+  description="Enter a short name."
+  placeholder="Enter your name" />
+```
+
 ## Forms
 
 Use the `name` prop to submit the text value to the server. Set the `isRequired`, `minLength`, `maxLength`, `pattern`, or `type` props to validate the value, or implement custom client or server-side validation. See the [Forms](forms) guide to learn more.

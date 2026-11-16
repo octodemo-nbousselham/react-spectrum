@@ -14,6 +14,7 @@ import {classNames} from '../utils/classNames';
 
 import {Flex} from '../layout/Flex';
 import {HelpText} from './HelpText';
+import helpTextStyles from '@adobe/spectrum-css-temp/components/helptext/vars.css';
 import {Label, SpectrumLabelPropsBase} from './Label';
 import {
   LabelPosition,
@@ -44,10 +45,11 @@ export interface SpectrumFieldProps
   labelProps?: LabelHTMLAttributes<HTMLLabelElement>;
   descriptionProps?: HTMLAttributes<HTMLElement>;
   errorMessageProps?: HTMLAttributes<HTMLElement>;
+  characterCountProps?: HTMLAttributes<HTMLElement>;
+  characterCountText?: string | null;
   wrapperClassName?: string;
   wrapperProps?: HTMLAttributes<HTMLElement>;
 }
-
 export const Field = React.forwardRef(function Field(
   props: SpectrumFieldProps,
   ref: Ref<HTMLElement>
@@ -76,6 +78,8 @@ export const Field = React.forwardRef(function Field(
     // Not every component that uses <Field> supports help text.
     descriptionProps = {},
     errorMessageProps = {},
+    characterCountProps = {},
+    characterCountText = null,
     elementType,
     wrapperClassName,
     wrapperProps = {},
@@ -97,6 +101,7 @@ export const Field = React.forwardRef(function Field(
   }
   let hasHelpText =
     !!description || (errorMessageString && (isInvalid || validationState === 'invalid'));
+  let hasCharacterCount = characterCountText != null;
   let contextualHelpId = useId();
 
   let fallbackLabelPropsId = useId();
@@ -125,7 +130,7 @@ export const Field = React.forwardRef(function Field(
     })
   );
 
-  let renderHelpText = () => (
+  let renderHelpText = (includeGridArea = true) => (
     <HelpText
       descriptionProps={descriptionProps}
       errorMessageProps={errorMessageProps}
@@ -135,10 +140,50 @@ export const Field = React.forwardRef(function Field(
       isInvalid={isInvalid}
       isDisabled={isDisabled}
       showErrorIcon={showErrorIcon}
-      gridArea={labelStyles.helpText}
+      gridArea={includeGridArea ? (labelStyles.helpText as any) || 'helpText' : undefined}
     />
   );
 
+  let renderCharacterCount = () => (
+    <div
+      {...characterCountProps}
+      className={classNames(helpTextStyles, 'spectrum-HelpText', 'spectrum-HelpText--neutral', {
+        'is-disabled': isDisabled
+      })}>
+      <div className={classNames(helpTextStyles, 'spectrum-HelpText-text')}>
+        {characterCountText}
+      </div>
+    </div>
+  );
+
+  let helpBandStyle = (includeGridArea: boolean, justifyContent: string) => ({
+    ...(includeGridArea ? {gridArea: (labelStyles.helpText as any) || 'helpText'} : null),
+    display: 'flex',
+    justifyContent,
+    gap: 'var(--spectrum-global-dimension-size-100)',
+    alignItems: 'baseline'
+  });
+
+  let renderHelpBand = (includeGridArea = true) => {
+    if (!hasHelpText && !hasCharacterCount) {
+      return null;
+    }
+
+    if (hasHelpText && hasCharacterCount) {
+      return (
+        <div style={helpBandStyle(includeGridArea, 'space-between')}>
+          {renderHelpText(false)}
+          {renderCharacterCount()}
+        </div>
+      );
+    }
+
+    if (hasCharacterCount) {
+      return <div style={helpBandStyle(includeGridArea, 'flex-end')}>{renderCharacterCount()}</div>;
+    }
+
+    return renderHelpText(includeGridArea);
+  };
   let renderChildren = () => {
     if (labelPosition === 'side') {
       return (
@@ -146,7 +191,7 @@ export const Field = React.forwardRef(function Field(
           direction="column"
           UNSAFE_className={classNames(labelStyles, 'spectrum-Field-wrapper')}>
           {children}
-          {hasHelpText && renderHelpText()}
+          {renderHelpBand(false)}
         </Flex>
       );
     }
@@ -154,11 +199,10 @@ export const Field = React.forwardRef(function Field(
     return (
       <>
         {children}
-        {hasHelpText && renderHelpText()}
+        {renderHelpBand(true)}
       </>
     );
   };
-
   let labelAndContextualHelp = (
     <>
       {label && (

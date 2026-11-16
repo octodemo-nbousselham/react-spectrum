@@ -101,6 +101,17 @@ export const WithDescription: TextAreaStory = {
   name: 'with description'
 };
 
+export const WithCharacterCount: TextAreaStory = {
+  render: args =>
+    render({
+      ...args,
+      showCharacterCount: true,
+      maxLength: 100,
+      description: 'Enter product feedback.'
+    }),
+  name: 'with character count'
+};
+
 export const WithErrorMessage: TextAreaStory = {
   render: args =>
     render({...args, errorMessage: 'Enter at least 250 characters.', validationState: 'invalid'}),

@@ -10,6 +10,7 @@
  * governing permissions and limitations under the License.
  */
 
+import {announce} from '../live-announcer/LiveAnnouncer';
 import {
   AriaLabelingProps,
   AriaValidationProps,
@@ -27,6 +28,7 @@ import {
 } from '@react-types/shared';
 import {filterDOMProps} from '../utils/filterDOMProps';
 import {getEventTarget} from '../utils/shadowdom/DOMFunctions';
+import intlMessages from '../../intl/textfield/*.json';
 import {mergeProps} from '../utils/mergeProps';
 import React, {
   ChangeEvent,
@@ -34,6 +36,8 @@ import React, {
   type JSX,
   LabelHTMLAttributes,
   RefObject,
+  useEffect,
+  useRef,
   useState
 } from 'react';
 import {useControlledState} from 'react-stately/useControlledState';
@@ -42,6 +46,8 @@ import {useFocusable} from '../interactions/useFocusable';
 import {useFormReset} from '../utils/useFormReset';
 import {useFormValidation} from '../form/useFormValidation';
 import {useFormValidationState} from 'react-stately/private/form/useFormValidationState';
+import {useId} from '../utils/useId';
+import {useLocalizedStringFormatter} from '../i18n/useLocalizedStringFormatter';
 
 /**
  * A map of HTML element names and their interface types.
@@ -131,6 +137,14 @@ export interface AriaTextFieldProps<T = HTMLInputElement>
    * [MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/enterkeyhint).
    */
   enterKeyHint?: 'enter' | 'done' | 'go' | 'next' | 'previous' | 'search' | 'send';
+  /**
+   * Whether to display a character count when `maxLength` is set. Shows the current length and
+   * maximum as localized text below the field, and politely announces remaining characters to
+   * screen readers as the limit approaches.
+   *
+   * @default false
+   */
+  showCharacterCount?: boolean;
 }
 
 export interface AriaTextFieldOptions<
@@ -177,6 +191,12 @@ export interface TextFieldAria<
   descriptionProps: DOMAttributes;
   /** Props for the text field's error message element, if any. */
   errorMessageProps: DOMAttributes;
+  /** Props for the character count element, if any. */
+  characterCountProps: DOMAttributes;
+  /**
+   * Localized character count text (e.g. "3/10"), or `null` when the character count is inactive.
+   */
+  characterCountText: string | null;
 }
 
 /**
@@ -195,7 +215,9 @@ export function useTextField<T extends TextFieldIntrinsicElements = DefaultEleme
     isRequired = false,
     isReadOnly = false,
     type = 'text',
-    validationBehavior = 'aria'
+    validationBehavior = 'aria',
+    showCharacterCount = false,
+    maxLength
   } = props;
   let [value, setValue] = useControlledState<string>(
     props.value,
@@ -223,6 +245,50 @@ export function useTextField<T extends TextFieldIntrinsicElements = DefaultEleme
   let [initialValue] = useState(value);
   useFormReset(ref, props.defaultValue ?? initialValue, setValue);
   useFormValidation(props, validationState, ref);
+
+  let stringFormatter = useLocalizedStringFormatter(intlMessages, '@react-aria/textfield');
+  let characterCountMax = showCharacterCount && typeof maxLength === 'number' ? maxLength : null;
+  let isCharacterCountActive = characterCountMax != null;
+  let characterCountId = useId();
+  let characterCountProps: DOMAttributes = isCharacterCountActive ? {id: characterCountId} : {};
+  let characterCountText: string | null = null;
+  let remainingCount = 0;
+  if (characterCountMax != null) {
+    let current = value.length;
+    remainingCount = Math.max(0, characterCountMax - current);
+    characterCountText = stringFormatter.format('characterCount', {
+      current,
+      maxLength: characterCountMax
+    });
+  }
+
+  let lastAnnouncedRemaining = useRef<number | null>(null);
+  useEffect(() => {
+    if (characterCountMax == null) {
+      lastAnnouncedRemaining.current = null;
+      return;
+    }
+
+    let threshold = Math.max(10, Math.ceil(characterCountMax * 0.1));
+    if (remainingCount > threshold) {
+      lastAnnouncedRemaining.current = null;
+      return;
+    }
+
+    if (lastAnnouncedRemaining.current === remainingCount) {
+      return;
+    }
+
+    lastAnnouncedRemaining.current = remainingCount;
+    announce(stringFormatter.format('characterCountAnnouncement', {remainingCount}), 'polite');
+  }, [characterCountMax, remainingCount, stringFormatter]);
+
+  if (isCharacterCountActive) {
+    fieldProps = mergeProps(fieldProps, {
+      'aria-describedby':
+        [fieldProps['aria-describedby'], characterCountId].filter(Boolean).join(' ') || undefined
+    });
+  }
 
   return {
     labelProps,
@@ -272,6 +338,8 @@ export function useTextField<T extends TextFieldIntrinsicElements = DefaultEleme
     }),
     descriptionProps,
     errorMessageProps,
+    characterCountProps,
+    characterCountText,
     isInvalid,
     validationErrors,
     validationDetails

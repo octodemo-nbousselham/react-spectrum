@@ -70,6 +70,22 @@ function Example() {
 }
 ```
 
+## Character count
+
+Set `showCharacterCount` with `maxLength` to display a localized `current/max` count below the field. Remaining characters are politely announced to screen readers as the limit approaches.
+
+```tsx render
+"use client";
+import {TextArea} from '@react-spectrum/s2/TextArea';
+
+<TextArea
+  label="Comment"
+  showCharacterCount
+  maxLength={100}
+  description="Share your feedback."
+  placeholder="Enter a comment" />
+```
+
 ## Forms
 
 Use the `name` prop to submit the text value to the server. Set the `isRequired`, `minLength`, or `maxLength` props to validate the value, or implement custom client or server-side validation. See the [Forms](forms) guide to learn more.

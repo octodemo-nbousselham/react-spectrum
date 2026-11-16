@@ -10,8 +10,9 @@
  * governing permissions and limitations under the License.
  */
 
-import {fireEvent, render} from '@react-spectrum/test-utils-internal';
+import {fireEvent, pointerMap, render} from '@react-spectrum/test-utils-internal';
 import {TextArea, TextField} from '../src/TextField';
+import userEvent from '@testing-library/user-event';
 
 describe('TextField', () => {
   it('should focus textarea when tapping invalid icon', async () => {
@@ -35,4 +36,25 @@ describe('TextField', () => {
     let labels = input.getAttribute('aria-labelledby')?.split(' ');
     expect(document.getElementById(labels![1])).toHaveTextContent('Prefix');
   });
+
+  it.each([
+    {name: 'TextField', Component: TextField},
+    {name: 'TextArea', Component: TextArea}
+  ])(
+    '$name shows a character count when showCharacterCount and maxLength are set',
+    async ({Component}) => {
+      let user = userEvent.setup({delay: null, pointerMap});
+      let {getByRole, getByText} = render(
+        <Component label="Name" showCharacterCount maxLength={10} defaultValue="hello" />
+      );
+
+      let input = getByRole('textbox');
+      let count = getByText('5/10');
+      expect(input.getAttribute('aria-describedby')).toContain(count.id);
+
+      await user.clear(input);
+      await user.type(input, 'abc');
+      expect(getByText('3/10')).toBeInTheDocument();
+    }
+  );
 });

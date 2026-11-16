@@ -20,6 +20,8 @@ import {Label} from '../src/Label';
 import {Meta, StoryObj} from '@storybook/react';
 import React from 'react';
 import styles from '../example/index.css';
+import {Text} from '../src/Text';
+import {TextArea} from '../src/TextArea';
 import {TextField} from '../src/TextField';
 import './styles.css';
 
@@ -72,4 +74,20 @@ export const TextFieldSubmitExample: TextFieldStory = {
       data: 'Non controlled isInvalid should render the default error message (aka just hit submit and see that it appears). Controlled isInvalid=true should not render the error message div (aka no padding should appear between the input and the buttons).'
     }
   }
+};
+
+export const CharacterCountExample: TextFieldStory = {
+  render: () => (
+    <div style={{display: 'flex', flexDirection: 'column', gap: 16}}>
+      <TextField showCharacterCount maxLength={20} defaultValue="Hello">
+        <Label>Name</Label>
+        <Input />
+      </TextField>
+      <TextField showCharacterCount maxLength={100}>
+        <Label>Comment</Label>
+        <TextArea />
+        <Text slot="description">Share your feedback.</Text>
+      </TextField>
+    </div>
+  )
 };
