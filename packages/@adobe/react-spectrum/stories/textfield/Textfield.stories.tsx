@@ -110,6 +110,18 @@ export const WithDescription: TextFieldStory = {
   name: 'with description'
 };
 
+export const WithCharacterCount: TextFieldStory = {
+  render: args =>
+    render({
+      ...args,
+      showCharacterCount: true,
+      maxLength: 20,
+      defaultValue: 'Hello',
+      description: 'Enter a short name.'
+    }),
+  name: 'with character count'
+};
+
 export const WithErrorMessage: TextFieldStory = {
   render: args =>
     render({

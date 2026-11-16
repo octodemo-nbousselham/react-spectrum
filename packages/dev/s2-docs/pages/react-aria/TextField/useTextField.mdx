@@ -38,9 +38,12 @@ import {TextField} from 'hooks-starter/TextField';
   <Label />
   <Input /> or <TextArea />
   <Text slot="description" />
+  <Text slot="characterCount" />
   <FieldError />
 </TextField>
 ```
+
+When `showCharacterCount` is true and `maxLength` is set, `useTextField` returns `characterCountProps` and `characterCountText` for a visible count, wires the count into `aria-describedby`, and politely announces remaining characters as the limit approaches.
 
 <FunctionAPI function={docs.exports.useTextField} links={docs.links} />
 

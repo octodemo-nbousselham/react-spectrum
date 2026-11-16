@@ -98,10 +98,32 @@ export const ContextualHelpExample: StoryTextField = {
   }
 };
 
+export const CharacterCountExample: StoryTextField = {
+  args: {
+    label: 'Name',
+    showCharacterCount: true,
+    maxLength: 20,
+    defaultValue: 'Hello',
+    description: 'Enter a short name.',
+    placeholder: 'Enter your name'
+  }
+};
+
 export const TextAreaExample: StoryTextArea = {
   render: args => <TextArea {...args} />,
   args: {
     label: 'Comment',
+    placeholder: 'Enter a comment'
+  }
+};
+
+export const TextAreaCharacterCountExample: StoryTextArea = {
+  render: args => <TextArea {...args} />,
+  args: {
+    label: 'Comment',
+    showCharacterCount: true,
+    maxLength: 100,
+    description: 'Share your feedback.',
     placeholder: 'Enter a comment'
   }
 };

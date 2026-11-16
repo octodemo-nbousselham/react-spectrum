@@ -41,6 +41,14 @@ export interface SpectrumTextAreaProps
   icon?: ReactElement | null;
   /** Whether the input should be displayed with a quiet style. */
   isQuiet?: boolean;
+  /**
+   * Whether to display a character count when `maxLength` is set. Shows the current length and
+   * maximum as localized text below the field, and politely announces remaining characters to
+   * screen readers as the limit approaches.
+   *
+   * @default false
+   */
+  showCharacterCount?: boolean;
 }
 
 /**

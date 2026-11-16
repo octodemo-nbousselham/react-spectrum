@@ -106,6 +106,26 @@ import {TextField, Label, TextArea} from 'react-aria-components/TextField';
 </TextField>
 ```
 
+## Character count
+
+Set `showCharacterCount` with `maxLength` to display a localized `current/max` count below the field. Remaining characters are politely announced to screen readers as the limit approaches. A default count element is rendered automatically; customize it with `<Text slot="characterCount" />`.
+
+```tsx render
+"use client";
+import {TextField, Label, Input, TextArea} from 'react-aria-components/TextField';
+
+<>
+  <TextField showCharacterCount maxLength={20} defaultValue="Hello">
+    <Label>Name</Label>
+    <Input />
+  </TextField>
+  <TextField showCharacterCount maxLength={100}>
+    <Label>Comment</Label>
+    <TextArea className="react-aria-TextArea inset" />
+  </TextField>
+</>
+```
+
 ## API
 
 <Anatomy />
@@ -115,6 +135,7 @@ import {TextField, Label, TextArea} from 'react-aria-components/TextField';
   <Label />
   <Input /> or <TextArea />
   <Text slot="description" />
+  <Text slot="characterCount" />
   <FieldError />
 </TextField>
 ```

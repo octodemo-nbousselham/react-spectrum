@@ -37,7 +37,7 @@ import {
   useRef
 } from 'react';
 import {createFocusableRef} from './useDOMRef';
-import {FieldErrorIcon, FieldGroup, FieldLabel, HelpText, Input} from './Field';
+import {FieldErrorIcon, FieldGroup, FieldLabel, HelpText, helpTextStyles, Input} from './Field';
 import {
   FocusableRefValue,
   GlobalDOMAttributes,
@@ -49,7 +49,9 @@ import {FormContext, useFormProps} from './Form';
 import {InputContext, InputProps} from 'react-aria-components/Input';
 import {isChrome} from 'react-aria/private/utils/platform';
 import {mergeRefs} from 'react-aria/mergeRefs';
+import {mergeStyles} from '../style/runtime';
 import {StyleString} from '../style/types';
+import {Text} from 'react-aria-components/Text';
 import {TextContext} from './Content';
 import {useSpectrumContextProps} from './useSpectrumContextProps';
 
@@ -81,6 +83,14 @@ export interface TextFieldProps
    * A non-interactive element that appears before the input.
    */
   prefix?: ReactNode;
+  /**
+   * Whether to display a character count when `maxLength` is set. Shows the current length and
+   * maximum as localized text below the field, and politely announces remaining characters to
+   * screen readers as the limit approaches.
+   *
+   * @default false
+   */
+  showCharacterCount?: boolean;
 }
 
 export const TextFieldContext =
@@ -160,8 +170,11 @@ export const TextFieldBase = forwardRef(function TextFieldBase(
     fieldGroupCss,
     UNSAFE_style,
     UNSAFE_className = '',
+    showCharacterCount = false,
+    maxLength,
     ...textFieldProps
   } = props;
+  let showCount = showCharacterCount && typeof maxLength === 'number';
 
   // Expose imperative interface for ref
   useImperativeHandle(ref, () => ({
@@ -179,6 +192,8 @@ export const TextFieldBase = forwardRef(function TextFieldBase(
   return (
     <AriaTextField
       {...textFieldProps}
+      showCharacterCount={showCharacterCount}
+      maxLength={maxLength}
       ref={domRef}
       style={UNSAFE_style}
       className={
@@ -220,13 +235,55 @@ export const TextFieldBase = forwardRef(function TextFieldBase(
               {isInvalid && <FieldErrorIcon isDisabled={isDisabled} />}
             </Provider>
           </FieldGroup>
-          <HelpText
-            size={props.size}
-            isDisabled={isDisabled}
-            isInvalid={isInvalid}
-            description={description}>
-            {errorMessage}
-          </HelpText>
+          {showCount ? (
+            <div
+              className={style({
+                gridArea: 'helptext',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'baseline',
+                gap: 'text-to-visual',
+                paddingTop: '--field-gap',
+                contain: 'inline-size'
+              })}>
+              <HelpText
+                size={props.size}
+                isDisabled={isDisabled}
+                isInvalid={isInvalid}
+                description={description}
+                styles={style({
+                  gridArea: 'auto',
+                  paddingTop: 0,
+                  flexGrow: 1,
+                  flexShrink: 1,
+                  minWidth: 0,
+                  contain: 'none'
+                })}>
+                {errorMessage}
+              </HelpText>
+              <Text
+                slot="characterCount"
+                className={mergeStyles(
+                  helpTextStyles({size: props.size || 'M', isDisabled}),
+                  style({
+                    gridArea: 'auto',
+                    paddingTop: 0,
+                    contain: 'none',
+                    flexShrink: 0,
+                    marginInlineStart: 'auto'
+                  })
+                )}
+              />
+            </div>
+          ) : (
+            <HelpText
+              size={props.size}
+              isDisabled={isDisabled}
+              isInvalid={isInvalid}
+              description={description}>
+              {errorMessage}
+            </HelpText>
+          )}
         </>
       ))}
     </AriaTextField>

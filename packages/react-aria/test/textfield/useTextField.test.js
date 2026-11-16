@@ -10,7 +10,9 @@
  * governing permissions and limitations under the License.
  */
 
+jest.mock('../../src/live-announcer/LiveAnnouncer');
 import {actHook, renderHook} from '@react-spectrum/test-utils-internal';
+import {announce} from '../../src/live-announcer/LiveAnnouncer';
 import React from 'react';
 import {useTextField} from '../../src/textfield/useTextField';
 
@@ -18,6 +20,11 @@ describe('useTextField hook', () => {
   let renderTextFieldHook = props => {
     let {result} = renderHook(() => useTextField(props, React.createRef()));
     return result.current.inputProps;
+  };
+
+  let renderTextFieldHookResult = props => {
+    let {result} = renderHook(() => useTextField(props, React.createRef()));
+    return result;
   };
 
   describe('should return textFieldProps', () => {
@@ -111,6 +118,96 @@ describe('useTextField hook', () => {
       });
       expect(props.type).toBeUndefined();
       expect(props.pattern).toBeUndefined();
+    });
+  });
+
+  describe('character count', () => {
+    afterEach(() => {
+      announce.mockClear();
+    });
+
+    it('is inactive when showCharacterCount is false', () => {
+      let result = renderTextFieldHookResult({
+        'aria-label': 'mandatory label',
+        maxLength: 10,
+        defaultValue: 'hello'
+      });
+      expect(result.current.characterCountText).toBeNull();
+      expect(result.current.characterCountProps.id).toBeUndefined();
+      expect(result.current.inputProps['aria-describedby']).toBeUndefined();
+      expect(announce).not.toHaveBeenCalled();
+    });
+
+    it('is inactive when maxLength is unset', () => {
+      let result = renderTextFieldHookResult({
+        'aria-label': 'mandatory label',
+        showCharacterCount: true,
+        defaultValue: 'hello'
+      });
+      expect(result.current.characterCountText).toBeNull();
+      expect(result.current.characterCountProps.id).toBeUndefined();
+      expect(announce).not.toHaveBeenCalled();
+    });
+
+    it('includes the counter id in aria-describedby and formats the count text', () => {
+      let result = renderTextFieldHookResult({
+        'aria-label': 'mandatory label',
+        showCharacterCount: true,
+        maxLength: 10,
+        defaultValue: 'hello'
+      });
+      expect(result.current.characterCountText).toBe('5/10');
+      expect(result.current.characterCountProps.id).toBeDefined();
+      expect(result.current.inputProps['aria-describedby']).toBe(
+        result.current.characterCountProps.id
+      );
+    });
+
+    it('updates the count text when the value changes', () => {
+      let result = renderTextFieldHookResult({
+        'aria-label': 'mandatory label',
+        showCharacterCount: true,
+        maxLength: 10,
+        defaultValue: ''
+      });
+      expect(result.current.characterCountText).toBe('0/10');
+
+      actHook(() => {
+        result.current.inputProps.onChange({target: {value: 'abc'}});
+      });
+      expect(result.current.characterCountText).toBe('3/10');
+    });
+
+    it('announces remaining characters only in the approaching zone', () => {
+      let result = renderTextFieldHookResult({
+        'aria-label': 'mandatory label',
+        showCharacterCount: true,
+        maxLength: 100,
+        defaultValue: ''
+      });
+      expect(announce).not.toHaveBeenCalled();
+
+      actHook(() => {
+        result.current.inputProps.onChange({target: {value: 'a'.repeat(50)}});
+      });
+      expect(announce).not.toHaveBeenCalled();
+
+      actHook(() => {
+        result.current.inputProps.onChange({target: {value: 'a'.repeat(90)}});
+      });
+      expect(announce).toHaveBeenCalledTimes(1);
+      expect(announce).toHaveBeenCalledWith('10 characters remaining', 'polite');
+
+      actHook(() => {
+        result.current.inputProps.onChange({target: {value: 'a'.repeat(91)}});
+      });
+      expect(announce).toHaveBeenCalledTimes(2);
+      expect(announce).toHaveBeenLastCalledWith('9 characters remaining', 'polite');
+
+      actHook(() => {
+        result.current.inputProps.onChange({target: {value: 'a'.repeat(91)}});
+      });
+      expect(announce).toHaveBeenCalledTimes(2);
     });
   });
 });

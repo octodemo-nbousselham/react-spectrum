@@ -35,9 +35,17 @@ import {GlobalDOMAttributes} from '@react-types/shared';
 import {GroupContext} from './Group';
 import {InputContext} from './Input';
 import {LabelContext} from './Label';
-import React, {createContext, ForwardedRef, useCallback, useRef, useState} from 'react';
+import React, {
+  createContext,
+  ForwardedRef,
+  isValidElement,
+  ReactNode,
+  useCallback,
+  useRef,
+  useState
+} from 'react';
+import {Text, TextContext} from './Text';
 import {TextAreaContext} from './TextArea';
-import {TextContext} from './Text';
 
 export interface TextFieldRenderProps {
   /**
@@ -109,16 +117,23 @@ export const TextField = /*#__PURE__*/ createHideableComponent(function TextFiel
   [props, inputRef as unknown] = useContextProps(props, inputRef, FieldInputContext);
   let [labelRef, label] = useSlot(!props['aria-label'] && !props['aria-labelledby']);
   let [inputElementType, setInputElementType] = useState('input');
-  let {labelProps, inputProps, descriptionProps, errorMessageProps, ...validation} =
-    useTextField<any>(
-      {
-        ...removeDataAttributes(props),
-        inputElementType,
-        label,
-        validationBehavior
-      },
-      inputRef
-    );
+  let {
+    labelProps,
+    inputProps,
+    descriptionProps,
+    errorMessageProps,
+    characterCountProps,
+    characterCountText,
+    ...validation
+  } = useTextField<any>(
+    {
+      ...removeDataAttributes(props),
+      inputElementType,
+      label,
+      validationBehavior
+    },
+    inputRef
+  );
 
   // Intercept setting the input ref so we can determine what kind of element we have.
   // useTextField uses this to determine what props to include.
@@ -146,6 +161,21 @@ export const TextField = /*#__PURE__*/ createHideableComponent(function TextFiel
   let DOMProps = filterDOMProps(props, {global: true});
   delete DOMProps.id;
 
+  let textContextSlots: Record<string, any> = {
+    description: descriptionProps,
+    errorMessage: errorMessageProps
+  };
+  if (characterCountText != null) {
+    textContextSlots.characterCount = {
+      ...characterCountProps,
+      children: characterCountText
+    };
+  }
+
+  let children = renderProps.children;
+  let showDefaultCharacterCount =
+    characterCountText != null && !containsCharacterCountSlot(children);
+
   return (
     <dom.div
       {...DOMProps}
@@ -169,19 +199,26 @@ export const TextField = /*#__PURE__*/ createHideableComponent(function TextFiel
               isDisabled: props.isDisabled || false
             }
           ],
-          [
-            TextContext,
-            {
-              slots: {
-                description: descriptionProps,
-                errorMessage: errorMessageProps
-              }
-            }
-          ],
+          [TextContext, {slots: textContextSlots}],
           [FieldErrorContext, validation]
         ]}>
-        {renderProps.children}
+        {children}
+        {showDefaultCharacterCount && (
+          <Text slot="characterCount" className="react-aria-TextField-characterCount" />
+        )}
       </Provider>
     </dom.div>
   );
 });
+
+function containsCharacterCountSlot(node: ReactNode): boolean {
+  return React.Children.toArray(node).some(child => {
+    if (!isValidElement<{slot?: string; children?: ReactNode}>(child)) {
+      return false;
+    }
+    if (child.props.slot === 'characterCount') {
+      return true;
+    }
+    return containsCharacterCountSlot(child.props.children);
+  });
+}

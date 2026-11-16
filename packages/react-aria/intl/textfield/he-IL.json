@@ -1,0 +1,4 @@
+{
+  "characterCount": "{current, number}/{maxLength, number}",
+  "characterCountAnnouncement": "{remainingCount, plural, one {# character remaining} other {# characters remaining}}"
+}

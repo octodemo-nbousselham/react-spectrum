@@ -334,5 +334,24 @@ describe('TextField', () => {
         expect(input).toHaveValue('Devon');
       });
     }
+
+    it('renders a character count when showCharacterCount and maxLength are set', async () => {
+      let Component = component;
+      let {getByRole, getByText} = render(
+        <TextField showCharacterCount maxLength={10} defaultValue="hello">
+          <Label>Test</Label>
+          <Component />
+        </TextField>
+      );
+
+      let input = getByRole('textbox');
+      let count = getByText('5/10');
+      expect(count).toHaveClass('react-aria-TextField-characterCount');
+      expect(input.getAttribute('aria-describedby')).toContain(count.id);
+
+      await user.clear(input);
+      await user.type(input, 'abc');
+      expect(getByText('3/10')).toBeInTheDocument();
+    });
   });
 });

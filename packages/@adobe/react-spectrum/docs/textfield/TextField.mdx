@@ -194,6 +194,14 @@ Both a description and an error message can be supplied to a TextField. The desc
 </Flex>
 ```
 
+### Character count
+
+Set `showCharacterCount` with `maxLength` to display a localized `current/max` count below the field. Remaining characters are politely announced to screen readers as the limit approaches.
+
+```tsx example
+<TextField label="Name" showCharacterCount maxLength={20} defaultValue="Hello" description="Enter a short name." />
+```
+
 ### Contextual help
 
 A [ContextualHelp](ContextualHelp.html) element may be placed next to the label to provide additional information or help about a TextField.
