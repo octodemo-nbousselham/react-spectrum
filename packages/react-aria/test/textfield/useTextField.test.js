@@ -178,6 +178,22 @@ describe('useTextField hook', () => {
       expect(result.current.characterCountText).toBe('3/10');
     });
 
+    it('does not announce on mount when the count is already inside the threshold', () => {
+      let result = renderTextFieldHookResult({
+        'aria-label': 'mandatory label',
+        showCharacterCount: true,
+        maxLength: 10,
+        defaultValue: ''
+      });
+      expect(announce).not.toHaveBeenCalled();
+
+      actHook(() => {
+        result.current.inputProps.onChange({target: {value: 'a'}});
+      });
+      expect(announce).toHaveBeenCalledTimes(1);
+      expect(announce).toHaveBeenCalledWith('9 characters remaining', 'polite');
+    });
+
     it('announces remaining characters only in the approaching zone', () => {
       let result = renderTextFieldHookResult({
         'aria-label': 'mandatory label',

@@ -36,7 +36,6 @@ import React, {
   type JSX,
   LabelHTMLAttributes,
   RefObject,
-  useEffect,
   useRef,
   useState
 } from 'react';
@@ -48,6 +47,7 @@ import {useFormValidation} from '../form/useFormValidation';
 import {useFormValidationState} from 'react-stately/private/form/useFormValidationState';
 import {useId} from '../utils/useId';
 import {useLocalizedStringFormatter} from '../i18n/useLocalizedStringFormatter';
+import {useUpdateEffect} from '../utils/useUpdateEffect';
 
 /**
  * A map of HTML element names and their interface types.
@@ -262,8 +262,11 @@ export function useTextField<T extends TextFieldIntrinsicElements = DefaultEleme
     });
   }
 
+  // Skip the initial mount. Fields that start inside the threshold (including
+  // maxLength <= 10) would otherwise announce before focus; aria-describedby
+  // already exposes the count.
   let lastAnnouncedRemaining = useRef<number | null>(null);
-  useEffect(() => {
+  useUpdateEffect(() => {
     if (characterCountMax == null) {
       lastAnnouncedRemaining.current = null;
       return;
